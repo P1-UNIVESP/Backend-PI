@@ -6,7 +6,58 @@ datasource db {
   provider = "postgresql"
 }
 
-model Death {
-  id        Int      @id @default(autoincrement())
+model Owner {
+  id        String   @id @default(uuid())
+  name      String
+  cpf       String   @unique
+  phone     String?
+  plots     Plot[]
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Plot {
+  id       String     @id @default(uuid())
+  code     String     @unique
+  type     PlotType
+  status   StatusPlot @default(DISPONIVEL)
+  capacity Int
+
+  ownerId String?
+  owner   Owner?  @relation(fields: [ownerId], references: [id])
+
+  burials Burial[]
+}
+
+model Deceased {
+  id               String   @id @default(uuid())
+  name             String
+  birthDate        DateTime
+  deathDate        DateTime
+  deathCertificate String   @unique
+
+  burial Burial?
+}
+
+model Burial {
+  id         String   @id @default(uuid())
+  burialDate DateTime
+
+  plotId String
+  plot   Plot   @relation(fields: [plotId], references: [id])
+
+  deceasedId String   @unique
+  deceased   Deceased @relation(fields: [deceasedId], references: [id])
+}
+
+enum PlotType {
+  TERRA
+  GAVETA
+  MAUSOLEU
+}
+
+enum StatusPlot {
+  DISPONIVEL
+  OCUPADO
+  MANUTENCAO
 }

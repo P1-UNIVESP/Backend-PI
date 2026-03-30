@@ -7,46 +7,46 @@ datasource db {
 }
 
 model Owner {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(uuid())
   name      String
   cpf       String   @unique
-  telefone  String?
+  phone     String?
   plots     Plot[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Plot {
-  id       Int        @id @default(autoincrement())
+  id       String     @id @default(uuid())
   code     String     @unique
   type     PlotType
   status   StatusPlot @default(DISPONIVEL)
   capacity Int
 
-  ownerId Int?
-  owner   Owner? @relation(fields: [ownerId], references: [id])
+  ownerId String?
+  owner   Owner?  @relation(fields: [ownerId], references: [id])
 
   burials Burial[]
 }
 
 model Deceased {
-  id              Int      @id @default(autoincrement())
-  name            String
-  dataNascimento  DateTime
-  dataFalecimento DateTime
-  certidaoObito   String   @unique
+  id               String   @id @default(uuid())
+  name             String
+  birthDate        DateTime
+  deathDate        DateTime
+  deathCertificate String   @unique
 
   burial Burial?
 }
 
 model Burial {
-  id         Int      @id @default(autoincrement())
+  id         String   @id @default(uuid())
   burialDate DateTime
 
-  plotId Int
-  plot   Plot @relation(fields: [plotId], references: [id])
+  plotId String
+  plot   Plot   @relation(fields: [plotId], references: [id])
 
-  deceasedId Int      @unique
+  deceasedId String   @unique
   deceased   Deceased @relation(fields: [deceasedId], references: [id])
 }
 

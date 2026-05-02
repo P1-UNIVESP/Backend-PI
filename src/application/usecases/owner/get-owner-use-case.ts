@@ -11,6 +11,14 @@ export class GetOwnerUseCase {
       where: { id },
       include: {
         plots: true,
+        ownershipHistory: {
+          include: {
+            plot: true,
+          },
+          orderBy: {
+            startedAt: "desc",
+          },
+        },
       },
     });
 

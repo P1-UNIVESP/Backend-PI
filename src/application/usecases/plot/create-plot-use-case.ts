@@ -33,14 +33,27 @@ export class CreatePlotUseCase {
       }
     }
 
-    const plot = await prisma.plot.create({
-      data: {
-        code: normalizedCode,
-        type,
-        status: status ?? StatusPlot.DISPONIVEL,
-        capacity,
-        ownerId: ownerId ?? null,
-      },
+    const plot = await prisma.$transaction(async (tx) => {
+      const createdPlot = await tx.plot.create({
+        data: {
+          code: normalizedCode,
+          type,
+          status: status ?? StatusPlot.DISPONIVEL,
+          capacity,
+          ownerId: ownerId ?? null,
+        },
+      });
+
+      if (ownerId) {
+        await tx.plotOwnerHistory.create({
+          data: {
+            plotId: createdPlot.id,
+            ownerId,
+          },
+        });
+      }
+
+      return createdPlot;
     });
 
     return plot;

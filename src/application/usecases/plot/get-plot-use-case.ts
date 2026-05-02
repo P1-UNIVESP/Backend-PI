@@ -11,6 +11,14 @@ export class GetPlotUseCase {
       where: { id },
       include: {
         owner: true,
+        ownershipHistory: {
+          include: {
+            owner: true,
+          },
+          orderBy: {
+            startedAt: "desc",
+          },
+        },
         burials: {
           include: {
             deceased: true,

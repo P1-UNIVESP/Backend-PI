@@ -27,7 +27,17 @@ export class ListPlotsUseCase {
     const [plots, total] = await prisma.$transaction([
       prisma.plot.findMany({
         where,
-        include: { owner: true },
+        include: {
+          owner: true,
+          ownershipHistory: {
+            include: {
+              owner: true,
+            },
+            orderBy: {
+              startedAt: "desc",
+            },
+          },
+        },
         orderBy: { code: "asc" },
         take: limit,
         skip: offset,

@@ -44,15 +44,43 @@ export class UpdatePlotUseCase {
       }
     }
 
-    const updatedPlot = await prisma.plot.update({
-      where: { id },
-      data: {
-        code: normalizedCode,
-        type,
-        status,
-        capacity,
-        ownerId,
-      },
+    const updatedPlot = await prisma.$transaction(async (tx) => {
+      const nextOwnerId = ownerId === undefined ? plot.ownerId : ownerId;
+      const ownerChanged = ownerId !== undefined && ownerId !== plot.ownerId;
+
+      if (ownerChanged) {
+        await tx.plotOwnerHistory.updateMany({
+          where: {
+            plotId: plot.id,
+            endedAt: null,
+          },
+          data: {
+            endedAt: new Date(),
+          },
+        });
+      }
+
+      const result = await tx.plot.update({
+        where: { id },
+        data: {
+          code: normalizedCode,
+          type,
+          status,
+          capacity,
+          ownerId: nextOwnerId,
+        },
+      });
+
+      if (ownerChanged && nextOwnerId) {
+        await tx.plotOwnerHistory.create({
+          data: {
+            plotId: plot.id,
+            ownerId: nextOwnerId,
+          },
+        });
+      }
+
+      return result;
     });
 
     return updatedPlot;

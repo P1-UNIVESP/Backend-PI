@@ -22,7 +22,17 @@ export class ListOwnersUseCase {
       prisma.owner.findMany({
         where,
         orderBy: { createdAt: "desc" },
-        include: { plots: true },
+        include: {
+          plots: true,
+          ownershipHistory: {
+            include: {
+              plot: true,
+            },
+            orderBy: {
+              startedAt: "desc",
+            },
+          },
+        },
         take: limit,
         skip: offset,
       }),

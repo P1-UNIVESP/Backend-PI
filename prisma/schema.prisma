@@ -7,13 +7,14 @@ datasource db {
 }
 
 model Owner {
-  id        String   @id @default(uuid())
-  name      String
-  cpf       String   @unique
-  phone     String?
-  plots     Plot[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id               String             @id @default(uuid())
+  name             String
+  cpf              String             @unique
+  phone            String?
+  plots            Plot[]             @relation("CurrentPlotOwner")
+  ownershipHistory PlotOwnerHistory[]
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
 }
 
 model Plot {
@@ -24,9 +25,25 @@ model Plot {
   capacity Int
 
   ownerId String?
-  owner   Owner?  @relation(fields: [ownerId], references: [id])
+  owner   Owner?  @relation("CurrentPlotOwner", fields: [ownerId], references: [id])
 
-  burials Burial[]
+  burials          Burial[]
+  ownershipHistory PlotOwnerHistory[]
+}
+
+model PlotOwnerHistory {
+  id        String    @id @default(uuid())
+  plotId    String
+  plot      Plot      @relation(fields: [plotId], references: [id], onDelete: Cascade)
+  ownerId   String
+  owner     Owner     @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  startedAt DateTime  @default(now())
+  endedAt   DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([plotId])
+  @@index([ownerId])
+  @@index([plotId, endedAt])
 }
 
 model Deceased {

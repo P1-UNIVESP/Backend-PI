@@ -3,9 +3,9 @@ import "dotenv/config";
 import { prisma } from "../src/lib/prisma";
 import { auth } from "../src/lib/auth";
 
-const adminName = process.env.SEED_ADMIN_NAME ?? "Admin";
-const adminEmail = process.env.SEED_ADMIN_EMAIL ?? "admin@example.com";
-const adminPassword = process.env.SEED_ADMIN_PASSWORD ?? "admin123456";
+const adminName = process.env.SEED_ADMIN_NAME || "";
+const adminEmail = process.env.SEED_ADMIN_EMAIL || "";
+const adminPassword = process.env.SEED_ADMIN_PASSWORD || "";
 
 async function main() {
   const existingAdmin = await prisma.user.findUnique({

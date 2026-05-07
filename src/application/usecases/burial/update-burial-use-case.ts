@@ -32,8 +32,8 @@ export class UpdateBurialUseCase {
         throw new AppError("Jazigo nao encontrado", 404);
       }
 
-      if (nextPlot.status === StatusPlot.OCUPADO) {
-        throw new AppError("Jazigo esta ocupado", 409);
+      if (nextPlot.status !== StatusPlot.DISPONIVEL) {
+        throw new AppError("Jazigo nao esta disponivel", 409);
       }
     }
 
@@ -65,14 +65,21 @@ export class UpdateBurialUseCase {
       });
 
       if (plotId && plotId !== burial.plotId) {
+        const updatedNextPlot = await tx.plot.updateMany({
+          where: {
+            id: plotId,
+            status: StatusPlot.DISPONIVEL,
+          },
+          data: { status: StatusPlot.OCUPADO },
+        });
+
+        if (updatedNextPlot.count === 0) {
+          throw new AppError("Jazigo nao esta disponivel", 409);
+        }
+
         await tx.plot.update({
           where: { id: burial.plotId },
           data: { status: StatusPlot.DISPONIVEL },
-        });
-
-        await tx.plot.update({
-          where: { id: plotId },
-          data: { status: StatusPlot.OCUPADO },
         });
       }
 

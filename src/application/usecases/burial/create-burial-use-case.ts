@@ -19,8 +19,8 @@ export class CreateBurialUseCase {
       throw new AppError("Jazigo nao encontrado", 404);
     }
 
-    if (plot.status === StatusPlot.OCUPADO) {
-      throw new AppError("Jazigo esta ocupado", 409);
+    if (plot.status !== StatusPlot.DISPONIVEL) {
+      throw new AppError("Jazigo nao esta disponivel", 409);
     }
 
     const deceased = await prisma.deceased.findUnique({
@@ -39,18 +39,25 @@ export class CreateBurialUseCase {
     }
 
     const burial = await prisma.$transaction(async (tx) => {
+      const updatedPlot = await tx.plot.updateMany({
+        where: {
+          id: plotId,
+          status: StatusPlot.DISPONIVEL,
+        },
+        data: {
+          status: StatusPlot.OCUPADO,
+        },
+      });
+
+      if (updatedPlot.count === 0) {
+        throw new AppError("Jazigo nao esta disponivel", 409);
+      }
+
       const createdBurial = await tx.burial.create({
         data: {
           burialDate,
           plotId,
           deceasedId,
-        },
-      });
-
-      await tx.plot.update({
-        where: { id: plotId },
-        data: {
-          status: StatusPlot.OCUPADO,
         },
       });
 

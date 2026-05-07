@@ -3,11 +3,20 @@ import express, { Request, Response } from "express";
 import { prisma } from "./lib/prisma";
 import { errorHandler } from "./infra/middlewares/error-handler";
 import { routes } from "./routes";
+import { betterAuthHandler } from "./infra/middlewares/better-auth-handler";
 
 const app = express();
 const port = Number(process.env.PORT) || 3000;
+const corsOrigin = process.env.CORS_ORIGIN?.split(",").map((origin) => origin.trim());
 
-app.use(cors());
+app.use(
+  cors({
+    origin: corsOrigin && corsOrigin.length > 0 ? corsOrigin : true,
+    credentials: true,
+  }),
+);
+
+app.all("/api/auth/*splat", betterAuthHandler);
 app.use(express.json());
 app.use(routes);
 
